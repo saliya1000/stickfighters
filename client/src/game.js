@@ -16,7 +16,7 @@ export class Game {
 
         this.players = [];
         this.localId = null;
-        
+
         // FPS tracking with self-correcting fixed timestep
         this.frameCount = 0;
         this.updateCount = 0;
@@ -84,17 +84,17 @@ export class Game {
         this.frameCount = 0;
         this.updateCount = 0;
         this.accumulator = 0;
-        
+
         // Self-correcting fixed timestep loop using requestAnimationFrame
         // This ensures updates happen at 60 FPS even if rendering is slower
         requestAnimationFrame(this.gameLoop.bind(this));
-        
+
         // Fallback: Use setInterval as backup (will be throttled but helps catch up)
         this.updateIntervalId = setInterval(() => {
             if (this.isRunning) {
                 const now = performance.now();
                 const timeSinceLastUpdate = now - this.lastUpdateTime;
-                
+
                 // If we're falling behind (more than 2 frames), force an update
                 if (timeSinceLastUpdate >= this.targetFrameTime * 2) {
                     this.update(this.fixedDeltaTime);
@@ -175,13 +175,13 @@ export class Game {
     onGameEnd(data) {
         console.log('Game End Data Received:', data);
         this.isRunning = false;
-        
+
         // Clean up update interval
         if (this.updateIntervalId) {
             clearInterval(this.updateIntervalId);
             this.updateIntervalId = null;
         }
-        
+
         const endScreen = document.getElementById('end-screen');
         const gameScreen = document.getElementById('game-screen');
         const winnerText = document.getElementById('winner-text');
@@ -223,13 +223,23 @@ export class Game {
         }
     }
 
-    onGamePaused(isPaused) {
+    onGamePaused(data) {
         const pauseMenu = document.getElementById('pause-menu');
         const timerEl = document.getElementById('timer');
+        const pauseStatus = document.getElementById('pause-status');
+
+        // Handle both boolean (old) and object (new) payload for backward compatibility/robustness
+        const isPaused = typeof data === 'object' ? data.isPaused : data;
+        const pauser = typeof data === 'object' ? data.pauser : null;
 
         if (isPaused) {
             pauseMenu.classList.remove('hidden');
             if (timerEl) timerEl.innerText += " (PAUSED)";
+            if (pauseStatus && pauser) {
+                pauseStatus.innerText = `Paused by ${pauser}`;
+            } else if (pauseStatus) {
+                pauseStatus.innerText = '';
+            }
         } else {
             pauseMenu.classList.add('hidden');
         }
@@ -252,12 +262,12 @@ export class Game {
             requestAnimationFrame(this.gameLoop.bind(this));
             return;
         }
-        
+
         // Initialize timing
         if (!this.lastUpdateTime) {
             this.lastUpdateTime = timestamp;
         }
-        
+
         // Calculate delta time, cap to prevent huge jumps
         let dt = timestamp - this.lastUpdateTime;
         const maxDelta = this.targetFrameTime * 3; // Max 3 frames worth
@@ -265,15 +275,15 @@ export class Game {
             dt = this.targetFrameTime;
             this.accumulator = 0; // Reset on large gap
         }
-        
+
         // Fixed timestep accumulator - ensures 60 FPS updates
         this.accumulator += dt;
-        
+
         // Update at fixed 60 FPS rate (16.67ms per update)
         // Process multiple updates if we're catching up, but limit to prevent blocking
         const maxUpdatesPerFrame = 3;
         let updatesThisFrame = 0;
-        
+
         while (this.accumulator >= this.fixedDeltaTime && updatesThisFrame < maxUpdatesPerFrame) {
             this.update(this.fixedDeltaTime);
             this.accumulator -= this.fixedDeltaTime;
@@ -281,16 +291,16 @@ export class Game {
             this.updateCount++;
             updatesThisFrame++;
         }
-        
+
         // Clamp accumulator to prevent infinite catch-up
         if (this.accumulator > this.fixedDeltaTime * maxUpdatesPerFrame) {
             this.accumulator = this.fixedDeltaTime * maxUpdatesPerFrame;
         }
-        
+
         // Render every frame (smooth visuals)
         this.render();
         this.frameCount++;
-        
+
         // Calculate instant FPS for smoother display (every frame)
         if (this.lastFrameTime > 0) {
             const frameDelta = timestamp - this.lastFrameTime;
@@ -299,37 +309,37 @@ export class Game {
             this.fps = Math.round(this.fps * 0.9 + instantFPS * 0.1);
         }
         this.lastFrameTime = timestamp;
-        
+
         // Track FPS every second for logging
         const fpsElapsed = timestamp - this.renderFPSLastTime;
         if (fpsElapsed >= 1000) {
             const actualFPS = this.frameCount;
             this.frameCount = 0;
             this.renderFPSLastTime = timestamp;
-            
+
             if (actualFPS < this.minFPS) {
                 console.warn(`Render FPS dropped below minimum: ${actualFPS} < ${this.minFPS}`);
             }
         }
-        
+
         // Track update FPS
         const updateElapsed = timestamp - this.updateFPSLastTime;
         if (updateElapsed >= 1000) {
             this.updateFPS = this.updateCount;
             this.updateCount = 0;
             this.updateFPSLastTime = timestamp;
-            
+
             if (this.updateFPS < this.minFPS) {
                 console.warn(`Update FPS dropped below minimum: ${this.updateFPS} < ${this.minFPS}`);
             }
         }
-        
+
         // Update FPS counter display more frequently (every 100ms for smooth updates)
         if (this.lastFPSUpdateTime === 0 || (timestamp - this.lastFPSUpdateTime) >= 100) {
             this.updateFPSCounter();
             this.lastFPSUpdateTime = timestamp;
         }
-        
+
         // Continue loop
         requestAnimationFrame(this.gameLoop.bind(this));
     }
@@ -354,14 +364,14 @@ export class Game {
     updateFPSCounter() {
         const fpsCounterEl = document.getElementById('fps-counter');
         if (!fpsCounterEl) return;
-        
+
         // Calculate current FPS from frame count (smoother display)
         const currentRenderFPS = Math.round(this.fps || 60);
         const currentUpdateFPS = Math.round(this.updateFPS || 60);
-        
+
         // Update text
         fpsCounterEl.textContent = `FPS: ${currentRenderFPS} / ${currentUpdateFPS}`;
-        
+
         // Update color based on FPS
         fpsCounterEl.classList.remove('low-fps', 'critical-fps');
         if (currentRenderFPS < 30) {

@@ -159,7 +159,7 @@ export class GameRoom {
         this.isPaused = !this.isPaused;
         const msg = this.isPaused ? `${player.name} paused the game` : `${player.name} resumed the game`;
 
-        this.io.to(this.roomId).emit('gamePaused', this.isPaused);
+        this.io.to(this.roomId).emit('gamePaused', { isPaused: this.isPaused, pauser: player.name });
         this.io.to(this.roomId).emit('serverMessage', msg);
     }
 
