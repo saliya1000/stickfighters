@@ -1,11 +1,15 @@
 import { io } from "socket.io-client";
 import { Game } from './game.js';
+import pkg from '../../package.json';
 
 console.log('Client initializing...');
 
 // Basic socket connection test
 const socket = io();
 const game = new Game();
+
+// Set Version
+document.getElementById('game-version').innerText = pkg.version;
 
 socket.on('connect', () => {
     console.log('Connected to server with ID:', socket.id);

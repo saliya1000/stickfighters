@@ -453,3 +453,14 @@ input {
   background-color: rgba(0, 0, 0, 0.4);
   color: white;
 }
+
+#version-footer {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+  z-index: 2000;
+  font-family: monospace;
+}
