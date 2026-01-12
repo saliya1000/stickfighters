@@ -16,16 +16,26 @@ A real-time multiplayer 2D fighting game built with modern Web Technologies. Fig
 - **Audio**: Procedurally synthesized sound effects using the Web Audio API (no assets required).
 - **Game Loop**: Server-authoritative logic with client-side interpolation.
 
-## Controls
+## Technology Stack
 
-| Action | Key(s) |
-|--------|--------|
-| **Move Left** | `A` or `Left Arrow` |
-| **Move Right** | `D` or `Right Arrow` |
-| **Jump** | `W`, `Space`, or `Up Arrow` |
-| **Punch** | `J` |
-| **Kick** | `K` |
-| **Pause/Menu** | `ESC` |
+- **Runtime**: Node.js
+- **Backend Framework**: Express
+- **Real-time Communication**: Socket.IO
+- **Frontend Build Tool**: Vite
+- **Frontend Framework**: Vanilla JavaScript (no framework, just DOM manipulation)
+
+## Project Structure
+
+```
+├── client/         # Frontend React/Vite application
+│   ├── src/        # Game logic, rendering, and network code
+│   └── index.html  # Entry point
+├── server/         # Backend Node/Express application
+│   └── index.js    # Server entry point and Socket.IO handler
+├── shared/         # Shared code between client and server (constants, types)
+├── scripts/        # Helper scripts for deployment/setup
+└── package.json    # Project dependencies and scripts
+```
 
 ## Getting Started
 
@@ -49,60 +59,88 @@ A real-time multiplayer 2D fighting game built with modern Web Technologies. Fig
 
 ### Running the Game
 
-1. **Development Mode** (Client + Server):
+You can run the game in different modes depending on your needs.
+
+#### 1. Development Mode (Recommended for Editing)
+
+**Option A: Run Everything (Easiest)**
+Start both client and server with a single command:
+```bash
+npm run dev
+```
+This will launch the server on port 3000 and the client on port 5173.
+
+**Option B: Manual Setup (For Debugging)**
+Run the client and server separately to see distinct logs.
+
+**Terminal 1 (Server):**
+```bash
+npm run server
+```
+
+**Terminal 2 (Client):**
+```bash
+npm run client
+```
+Open the URL shown in the terminal (usually `http://localhost:5173`).
+
+#### 2. Production Mode
+
+Build the client and serve it via the Node.js backend.
+
+```bash
+# Build the client to the dist/ folder
+npm run build
+
+# Start the server (serves the static files from dist/)
+npm start
+```
+Open `http://localhost:3000`.
+
+## Public Access & Multiplayer
+
+To play with friends over the internet, you need to expose your local server.
+
+### Option 1: Using ngrok (Recommended)
+
+1. Install [ngrok](https://ngrok.com/).
+2. Start your server (Development or Production mode).
+3. Run ngrok to tunnel port 3000:
    ```bash
-   npm run start
+   ngrok http 3000
    ```
-   This builds the client and starts the server on port 3000.
+4. Share the `https://...ngrok.io` URL with your friends.
 
-2. Open your browser to `http://localhost:3000`.
-3. Open a second tab to join as another player and fight!
+**Note for Development Mode:**
+If you are running `npm run dev` (Vertex/Client on 5173) but your backend is on 3000, you generally want to expose the **backend** (port 3000) and have players connect to that. If you are serving the built client (Production Mode), exposing port 3000 is enough.
 
-### Public Access (Multiplayer from Anywhere)
-
-The server is configured to accept connections from any network interface. To allow players to join from anywhere on the internet:
-
-**Option 1: Using ngrok (Recommended)**
+If you are developing and want to use a remote backend with a local client:
 ```bash
-# Install ngrok from https://ngrok.com/download
-# Then run:
-ngrok http 3000
-```
-This will give you a public URL like `https://abc123.ngrok.io` that you can share with players.
-
-**Option 2: Using localtunnel**
-```bash
-npm install -g localtunnel
-lt --port 3000
+VITE_SERVER_URL=https://your-ngrok-url.ngrok.io npm run dev
 ```
 
-**Option 3: Using the helper script**
+### Option 2: Setup Script
+
+We provide a helper script to guide you through public access setup:
 ```bash
 ./scripts/setup-public-access.sh
 ```
 
-**Option 4: Direct IP Access (Local Network Only)**
-The server will display network IP addresses when it starts. Players on the same network can use:
-```
-http://[YOUR_IP_ADDRESS]:3000
-```
+### Option 3: Local Network (LAN)
 
-**Connecting to a Remote Server:**
-Players can connect to a remote server by adding a `server` parameter to the URL:
-```
-http://localhost:3000?server=https://abc123.ngrok.io
-```
+If you are on the same Wi-Fi, you can connect using your machine's local IP address (e.g., `192.168.1.x`).
+The server console output will list available network addresses when you run `npm start` or `npm run server`.
 
-Or set the `VITE_SERVER_URL` environment variable when building:
-```bash
-VITE_SERVER_URL=https://abc123.ngrok.io npm run build
-```
+## Controls
 
-## Architecture
-
-- **Server**: Node.js + Express. Handles game state, physics, and broadcasts updates via Socket.IO.
-- **Client**: Vanilla JavaScript + Vite. Renders the game state using DOM manipulation for performance and style.
-- **Shared**: `physics` and `constants` modules are shared between client and server to ensure logic consistency.
+| Action | Key(s) |
+|--------|--------|
+| **Move Left** | `A` or `Left Arrow` |
+| **Move Right** | `D` or `Right Arrow` |
+| **Jump** | `W`, `Space`, or `Up Arrow` |
+| **Punch** | `J` |
+| **Kick** | `K` |
+| **Pause/Menu** | `ESC` |
 
 ## License
 

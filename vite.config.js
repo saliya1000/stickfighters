@@ -8,7 +8,7 @@ export default defineConfig({
         emptyOutDir: true,
     },
     server: {
-        allowedHosts: ['emendable-unconcordantly-angele.ngrok-free.dev'],
+        allowedHosts: true,
         proxy: {
             '/socket.io': {
                 target: 'http://localhost:3000',
