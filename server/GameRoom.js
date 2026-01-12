@@ -9,6 +9,7 @@ export class GameRoom {
         this.hostId = null; // Track the lead player
         this.isRunning = false;
         this.isPaused = false;
+        this.pauser = null; // Track who paused
         this.lastTime = Date.now();
         this.timer = 180; // 3 minutes in seconds
         this.powerups = new Map(); // id -> powerup object
@@ -91,6 +92,11 @@ export class GameRoom {
         // Notify success to the joiner
         socket.emit('joinSuccess');
 
+        // If game is paused, notify the new player immediately
+        if (this.isRunning && this.isPaused) {
+            socket.emit('gamePaused', { isPaused: true, pauser: this.pauser });
+        }
+
         this.io.to(this.roomId).emit('playerJoined', player);
 
         // Broadcast new lobby state
@@ -157,6 +163,13 @@ export class GameRoom {
         if (!player) return;
 
         this.isPaused = !this.isPaused;
+
+        if (this.isPaused) {
+            this.pauser = player.name;
+        } else {
+            this.pauser = null;
+        }
+
         const msg = this.isPaused ? `${player.name} paused the game` : `${player.name} resumed the game`;
 
         this.io.to(this.roomId).emit('gamePaused', { isPaused: this.isPaused, pauser: player.name });
