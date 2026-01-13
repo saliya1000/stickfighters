@@ -161,10 +161,13 @@ export class Game {
         // Update Scoreboard - Only if scores/names change
         const scoreboardEl = document.getElementById('scoreboard');
         if (scoreboardEl && this.players) {
+            // Filter out waiting players from scoreboard
+            const activePlayers = this.players.filter(p => !p.isWaiting);
+
             // Create a simple signature of the scoreboard state
             // map players to string "id-score" and sort by score
             // Actually we render sorted by score, so we should check the sorted order signature
-            const sortedPlayers = [...this.players].sort((a, b) => b.score - a.score);
+            const sortedPlayers = [...activePlayers].sort((a, b) => b.score - a.score);
             const scoreSignature = sortedPlayers.map(p => `${p.id}:${p.score}:${p.name}`).join('|');
 
             if (this.lastScoreStr !== scoreSignature) {

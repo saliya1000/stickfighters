@@ -120,7 +120,11 @@ export class GameRoom {
     removePlayer(socketId) {
         const player = this.players.get(socketId);
         if (player) {
-            this.io.to(this.roomId).emit('serverMessage', `${player.name} left the game.`);
+            // Only announce if the player was active (not waiting)
+            if (!player.isWaiting) {
+                this.io.to(this.roomId).emit('serverMessage', `${player.name} left the game.`);
+            }
+
             // Release color
             if (this.usedColors.has(player.color)) {
                 this.usedColors.delete(player.color);
