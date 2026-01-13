@@ -29,7 +29,6 @@ export class Game {
         this.fixedDeltaTime = 16.67; // Fixed 60 FPS timestep in ms
         this.accumulator = 0; // Fixed timestep accumulator
         this.lastUpdateTime = 0; // Last update timestamp
-        this.updateIntervalId = null; // Fallback timer
         this.lastFrameTime = 0; // For smooth FPS calculation
         this.lastFPSUpdateTime = 0; // Track when to update FPS display
     }
@@ -85,24 +84,9 @@ export class Game {
         this.updateCount = 0;
         this.accumulator = 0;
 
-        // Self-correcting fixed timestep loop using requestAnimationFrame
-        // This ensures updates happen at 60 FPS even if rendering is slower
+        // Fixed timestep loop using only requestAnimationFrame
+        // Optimized for slower PCs: processes one update per frame to prevent overload
         requestAnimationFrame(this.gameLoop.bind(this));
-
-        // Fallback: Use setInterval as backup (will be throttled but helps catch up)
-        this.updateIntervalId = setInterval(() => {
-            if (this.isRunning) {
-                const now = performance.now();
-                const timeSinceLastUpdate = now - this.lastUpdateTime;
-
-                // If we're falling behind (more than 2 frames), force an update
-                if (timeSinceLastUpdate >= this.targetFrameTime * 2) {
-                    this.update(this.fixedDeltaTime);
-                    this.lastUpdateTime = now;
-                    this.updateCount++;
-                }
-            }
-        }, this.targetFrameTime);
     }
 
     join(username) {
@@ -175,12 +159,6 @@ export class Game {
     onGameEnd(data) {
         console.log('Game End Data Received:', data);
         this.isRunning = false;
-
-        // Clean up update interval
-        if (this.updateIntervalId) {
-            clearInterval(this.updateIntervalId);
-            this.updateIntervalId = null;
-        }
 
         const endScreen = document.getElementById('end-screen');
         const gameScreen = document.getElementById('game-screen');
@@ -276,25 +254,24 @@ export class Game {
             this.accumulator = 0; // Reset on large gap
         }
 
-        // Fixed timestep accumulator - ensures 60 FPS updates
+        // Fixed timestep accumulator - ensures 60 FPS updates when possible
         this.accumulator += dt;
 
         // Update at fixed 60 FPS rate (16.67ms per update)
-        // Process multiple updates if we're catching up, but limit to prevent blocking
-        const maxUpdatesPerFrame = 3;
-        let updatesThisFrame = 0;
-
-        while (this.accumulator >= this.fixedDeltaTime && updatesThisFrame < maxUpdatesPerFrame) {
+        // Process only 1 update per frame for slower PC compatibility
+        // This allows the game to run slower naturally rather than catching up and causing stutter
+        if (this.accumulator >= this.fixedDeltaTime) {
             this.update(this.fixedDeltaTime);
             this.accumulator -= this.fixedDeltaTime;
             this.lastUpdateTime += this.fixedDeltaTime;
             this.updateCount++;
-            updatesThisFrame++;
         }
 
-        // Clamp accumulator to prevent infinite catch-up
-        if (this.accumulator > this.fixedDeltaTime * maxUpdatesPerFrame) {
-            this.accumulator = this.fixedDeltaTime * maxUpdatesPerFrame;
+        // Clamp accumulator to prevent infinite growth (allow up to 5 frames worth)
+        // This prevents lag spikes from accumulating forever
+        const maxAccumulator = this.fixedDeltaTime * 5;
+        if (this.accumulator > maxAccumulator) {
+            this.accumulator = maxAccumulator;
         }
 
         // Render every frame (smooth visuals)

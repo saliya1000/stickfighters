@@ -33,6 +33,12 @@ export class GameRoom {
     }
 
     addPlayer(socket, name) {
+        // Check if lobby is full (max 4 players)
+        if (this.players.size >= 4) {
+            socket.emit('joinError', 'Lobby is full (maximum 4 players)');
+            return;
+        }
+
         // Validate name (simple check)
         const playerName = name ? name.trim().substr(0, 10) : `Player ${socket.id.substr(0, 4)}`;
 
