@@ -24,7 +24,7 @@ export class Game {
         this.updateFPSLastTime = performance.now();
         this.fps = 60; // Render FPS
         this.updateFPS = 60; // Update FPS
-        this.minFPS = 30; // Lowered from 60 for old hardware compatibility
+        this.minFPS = 60;
         this.targetFrameTime = 1000 / 60; // 16.67ms for 60 FPS
         this.fixedDeltaTime = 16.67; // Fixed 60 FPS timestep in ms
         this.accumulator = 0; // Fixed timestep accumulator
@@ -372,9 +372,10 @@ export class Game {
         // per frame to achieve ~74 FPS updates, maintaining smooth gameplay
         this.accumulator += dt;
 
-        // Adaptive performance: reduce updates per frame on slower hardware
-        // For old hardware (2012 MacBook Air), limit to 1 update per frame
-        const maxUpdatesPerFrame = 1; // Reduced from 2 for better performance on old hardware
+        // Process multiple updates per frame (up to 2-3) to catch up to 60 FPS
+        // When rendering at 37 FPS: 2 updates/frame = ~74 FPS updates (exceeds 60 FPS target)
+        // Capped at 2 updates per frame for slower PC compatibility (prevents overload)
+        const maxUpdatesPerFrame = 2;
         let updatesThisFrame = 0;
 
         while (this.accumulator >= this.fixedDeltaTime && updatesThisFrame < maxUpdatesPerFrame) {
@@ -385,22 +386,15 @@ export class Game {
             updatesThisFrame++;
         }
 
-        // Clamp accumulator to prevent infinite catch-up (max 2 frames worth for old hardware)
-        // Reduced from 3 to 2 to prevent overload on slower systems
-        if (this.accumulator > this.fixedDeltaTime * 2) {
-            this.accumulator = this.fixedDeltaTime * 2;
+        // Clamp accumulator to prevent infinite catch-up (max 3 frames worth)
+        // This prevents lag spikes from accumulating forever while allowing catch-up
+        if (this.accumulator > this.fixedDeltaTime * 3) {
+            this.accumulator = this.fixedDeltaTime * 3;
         }
 
-        // Adaptive rendering: skip frames if FPS is low (for old hardware)
-        // If FPS drops below 40, render every other frame to improve performance
-        const shouldSkipFrame = this.fps < 40 && this.frameCount % 2 === 1;
-        if (!shouldSkipFrame) {
-            this.render();
-            this.frameCount++;
-        } else {
-            // Skip rendering but still increment frame count for tracking
-            this.frameCount++;
-        }
+        // Render every frame (smooth visuals)
+        this.render();
+        this.frameCount++;
 
         // Calculate instant FPS for smoother display (every frame)
         if (this.lastFrameTime > 0) {
