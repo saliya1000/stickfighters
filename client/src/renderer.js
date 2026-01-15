@@ -25,8 +25,9 @@ export class Renderer {
         platforms.forEach(p => {
             const el = document.createElement('div');
             el.className = 'platform';
-            el.style.left = `${p.x}px`;
-            el.style.top = `${p.y}px`;
+            el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
+            el.style.left = '0';
+            el.style.top = '0';
             el.style.width = `${p.width}px`;
             el.style.height = `${p.height}px`;
             this.arena.appendChild(el);
@@ -64,8 +65,9 @@ export class Renderer {
         el.style.width = `${CONSTANTS.POWERUP_SIZE}px`;
         el.style.height = `${CONSTANTS.POWERUP_SIZE}px`;
         el.style.position = 'absolute';
-        el.style.left = `${pu.x}px`;
-        el.style.top = `${pu.y}px`;
+        el.style.transform = `translate3d(${pu.x}px, ${pu.y}px, 0)`;
+        el.style.left = '0';
+        el.style.top = '0';
         el.style.borderRadius = '50%';
         el.style.boxShadow = '0 0 10px white';
         el.style.contain = 'layout style paint'; // Optimization: hints to browser
@@ -179,6 +181,8 @@ export class Renderer {
         hpFill.style.width = '100%';
         hpFill.style.height = '100%';
         hpFill.style.backgroundColor = '#0f0';
+        hpFill.style.transformOrigin = 'left';
+        hpFill.style.willChange = 'transform';
         hpBar.appendChild(hpFill);
         el.appendChild(hpBar);
 
@@ -229,7 +233,7 @@ export class Renderer {
         const hpPercent = Math.max(0, Math.round((player.hp / CONSTANTS.PLAYER_HP) * 100));
         // Update HP bar only if changed
         if (player.hp !== lastState.hp) {
-            hpFill.style.width = `${hpPercent}%`;
+            hpFill.style.transform = `scaleX(${hpPercent / 100})`;
 
             // Update Name Tag + HP text
             const newText = `${player.name} (${hpPercent}%)`;
