@@ -357,6 +357,7 @@ export class GameRoom {
 
             Physics.moveEntity(player);
             Physics.constrainToArena(player);
+            Physics.checkPlatformCollisions(player);
 
             // Action Timer
             if (player.actionTimer > 0) {

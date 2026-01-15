@@ -5,6 +5,7 @@ export class Renderer {
         this.arena = arenaElement;
         this.playerElements = new Map();
         this.powerupElements = new Map();
+        this.platformsRendered = false;
     }
 
     init() {
@@ -13,6 +14,25 @@ export class Renderer {
         this.arena.style.position = 'relative';
         this.arena.style.margin = '0 auto';
         this.arena.style.border = '2px solid #666';
+
+        this.renderPlatforms();
+    }
+
+    renderPlatforms() {
+        if (this.platformsRendered) return;
+
+        const platforms = CONSTANTS.PLATFORMS || [];
+        platforms.forEach(p => {
+            const el = document.createElement('div');
+            el.className = 'platform';
+            el.style.left = `${p.x}px`;
+            el.style.top = `${p.y}px`;
+            el.style.width = `${p.width}px`;
+            el.style.height = `${p.height}px`;
+            this.arena.appendChild(el);
+        });
+
+        this.platformsRendered = true;
     }
 
     renderPowerups(powerups) {

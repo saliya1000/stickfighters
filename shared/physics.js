@@ -42,4 +42,43 @@ export class Physics {
             rect1.y + rect1.height > rect2.y
         );
     }
+
+    static checkPlatformCollisions(entity) {
+        // Only check if falling
+        if (entity.vy < 0) return;
+
+        const feetY = entity.y + CONSTANTS.PLAYER_HEIGHT;
+        const prevFeetY = (entity.y - entity.vy) + CONSTANTS.PLAYER_HEIGHT; // Approximate previous position
+        // Better: we assume moveEntity has already updated y. 
+        // We need to know if we crossed the line this frame.
+
+        for (const plat of CONSTANTS.PLATFORMS) {
+            // Horizontal overlap
+            if (entity.x + CONSTANTS.PLAYER_WIDTH > plat.x && entity.x < plat.x + plat.width) {
+                // Vertical overlap logic for one-way platform
+                // Check if feet are currently slightly inside/below the platform top
+                // AND previously were above it.
+                // Since we don't track prevY explicitly in entity for this, we use the fact that we just moved.
+                // But simplified: if feet are within a small threshold of the top and we are falling.
+
+                // If feet are within the platform height range (top to bottom)
+                // And we are falling designated by vy >= 0
+                // SNAP to top.
+
+                // Effective top of platform
+                const platTop = plat.y;
+
+                // Check if feet are "inside" the platform (between top and bottom)
+                // But only if we were likely above it before. 
+                // Let's use a threshold: if feet are between platTop and platTop + 20 (velocity dependent usually)
+                if (feetY >= platTop && feetY <= platTop + plat.height + (entity.vy || 0)) {
+                    // Snap
+                    entity.y = platTop - CONSTANTS.PLAYER_HEIGHT;
+                    entity.vy = 0;
+                    entity.isGrounded = true;
+                    return; // Landed on one, stop checking
+                }
+            }
+        }
+    }
 }

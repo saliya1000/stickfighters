@@ -529,3 +529,24 @@ input {
   z-index: 2000;
   font-family: monospace;
 }
+/* Platforms */
+.platform {
+  position: absolute;
+  background: rgba(0, 255, 255, 0.2);
+  border: 1px solid rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+  /* Neon glow effect */
+}
+
+/* Add a top highlight to show it's a floor */
+.platform::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 255, 255, 0.8);
+  box-shadow: 0 0 5px rgba(0, 255, 255, 0.8);
+}
