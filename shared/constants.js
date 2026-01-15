@@ -5,9 +5,9 @@ export const CONSTANTS = {
 
     // Physics
     GRAVITY: 0.8,
-    FRICTION: 0.85,
-    MOVE_ACCEL: 1.5,
-    MAX_SPEED: 10,
+    FRICTION: 0.82,
+    MOVE_ACCEL: 0.8,
+    MAX_SPEED: 6,
     JUMP_FORCE: -18,
 
     // Player
