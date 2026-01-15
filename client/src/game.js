@@ -23,6 +23,10 @@ export class Game {
         this.targetFrameTime = 1000 / 60; // 16.67ms for 60 FPS
         this.fixedDeltaTime = 16.67; // Fixed 60 FPS timestep in ms
 
+        // Client-side Interpolation
+        this.stateBuffer = [];
+        this.interpolationDelay = 100; // ms to render in past
+
         // Optimization: Track last states to avoid DOM thrashing
         this.lastScoreStr = '';
 
@@ -112,8 +116,15 @@ export class Game {
     }
 
     onStateUpdate(state) {
-        this.players = state.players;
+        this.players = state.players; // Keep latest for UI/logic
         this.powerups = state.powerups;
+
+        // Add to interpolation buffer
+        this.stateBuffer.push(state);
+        // Keep buffer small (e.g. 1 second worth or just 20 frames)
+        if (this.stateBuffer.length > 20) {
+            this.stateBuffer.shift();
+        }
 
         if (!this.localId && this.network.socket.id) {
             this.localId = this.network.socket.id;
@@ -356,7 +367,7 @@ export class Game {
             this.accumulator = this.fixedDeltaTime * 3;
         }
 
-        // Render every frame (smooth visuals)
+        // Render interpolated state
         this.render();
 
         // Continue loop
@@ -390,9 +401,95 @@ export class Game {
             current.attack2 !== this.lastSentInput.attack2;
     }
 
+    getInterpolatedState() {
+        // Current render time is 'interpolationDelay' ms in the past
+        const renderTime = Date.now() - this.interpolationDelay;
+
+        // If no buffer, return null (fallback to latest)
+        if (this.stateBuffer.length === 0) return null;
+
+        // Ensure buffer is sorted by time (it should be, but safety first?)
+        // this.stateBuffer.sort((a, b) => a.time - b.time); // Optimization: assume push order is sorted
+
+        // Find frames surrounding renderTime
+        // We want: t0 <= renderTime <= t1
+        let t0 = null;
+        let t1 = null;
+
+        for (let i = this.stateBuffer.length - 1; i >= 0; i--) {
+            if (this.stateBuffer[i].time <= renderTime) {
+                t0 = this.stateBuffer[i];
+                t1 = this.stateBuffer[i + 1]; // Can be undefined if t0 is the last one
+                break;
+            }
+        }
+
+        // Case 1: Buffer is too new (renderTime is older than our oldest snapshot)
+        // Happens at start or extreme lag. Return oldest.
+        if (!t0 && this.stateBuffer.length > 0) {
+            return this.stateBuffer[0];
+        }
+
+        // Case 2: Buffer is too old (renderTime is newer than our newest snapshot)
+        // We are catching up or server lagged. Return newest.
+        if (!t1) {
+            return t0; // t0 is the newest in this case
+        }
+
+        // Case 3: Interpolate between t0 and t1
+        const totalDuration = t1.time - t0.time;
+        const elapsed = renderTime - t0.time;
+        const alpha = totalDuration > 0 ? elapsed / totalDuration : 0; // 0 to 1
+
+        // Interpolate players
+        const interpolatedPlayers = [];
+        const t1PlayersMap = new Map(t1.players.map(p => [p.id, p]));
+
+        t0.players.forEach(p0 => {
+            const p1 = t1PlayersMap.get(p0.id);
+            if (p1) {
+                // Formatting interpolation
+                const lerp = (start, end, t) => start + (end - start) * t;
+                interpolatedPlayers.push({
+                    ...p1, // Copy mostly from latest (hp, score, etc)
+                    x: lerp(p0.x, p1.x, alpha),
+                    y: lerp(p0.y, p1.y, alpha)
+                    // Could interpolate velocity/facing if needed, but pos is critical
+                });
+            } else {
+                // Player disappeared in t1 - maybe just show p0? Or skip?
+                // Let's skip to avoid ghosts
+            }
+        });
+
+        // Add players that spawned in t1 but weren't in t0? 
+        // They will pop in. Accepted for spawns.
+        t1.players.forEach(p1 => {
+            if (!t0.players.find(p => p.id === p1.id)) {
+                interpolatedPlayers.push(p1);
+            }
+        });
+
+        // Powerups (static mostly, but good to conform structure)
+        // Just return t1 powerups for now as they don't move smoothly usually
+        return {
+            players: interpolatedPlayers,
+            powerups: t1.powerups,
+            timer: t1.timer // Show latest timer? Or interpolated? Time doesn't interpolate well generally
+        };
+    }
+
     render() {
-        this.renderer.renderPlayers(this.players);
-        this.renderer.renderPowerups(this.powerups);
+        const renderState = this.getInterpolatedState();
+
+        if (renderState) {
+            this.renderer.renderPlayers(renderState.players);
+            this.renderer.renderPowerups(renderState.powerups);
+        } else if (this.players) {
+            // Fallback
+            this.renderer.renderPlayers(this.players);
+            this.renderer.renderPowerups(this.powerups);
+        }
     }
 
 
