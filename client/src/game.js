@@ -17,20 +17,11 @@ export class Game {
         this.players = [];
         this.localId = null;
 
-        // FPS tracking with self-correcting fixed timestep
-        this.frameCount = 0;
-        this.updateCount = 0;
-        this.renderFPSLastTime = performance.now();
-        this.updateFPSLastTime = performance.now();
-        this.fps = 60; // Render FPS
-        this.updateFPS = 60; // Update FPS
-        this.minFPS = 60;
+        // Optimizations: Track last states to avoid DOM thrashing
+        this.lastUpdateTime = 0; // Last update timestamp
+        this.accumulator = 0; // Fixed timestep accumulator
         this.targetFrameTime = 1000 / 60; // 16.67ms for 60 FPS
         this.fixedDeltaTime = 16.67; // Fixed 60 FPS timestep in ms
-        this.accumulator = 0; // Fixed timestep accumulator
-        this.lastUpdateTime = 0; // Last update timestamp
-        this.lastFrameTime = 0; // For smooth FPS calculation
-        this.lastFPSUpdateTime = 0; // Track when to update FPS display
 
         // Optimization: Track last states to avoid DOM thrashing
         this.lastScoreStr = '';
@@ -95,11 +86,8 @@ export class Game {
         this.setupUI();
         this.isRunning = true;
         const now = performance.now();
-        this.renderFPSLastTime = now;
-        this.updateFPSLastTime = now;
         this.lastUpdateTime = now;
-        this.lastFrameTime = 0;
-        this.lastFPSUpdateTime = 0;
+        this.accumulator = 0;
         this.frameCount = 0;
         this.updateCount = 0;
         this.accumulator = 0;
@@ -354,6 +342,7 @@ export class Game {
         let updatesThisFrame = 0;
 
         while (this.accumulator >= this.fixedDeltaTime && updatesThisFrame < maxUpdatesPerFrame) {
+            // console.log('Updating...'); // Very spammy
             this.update(this.fixedDeltaTime);
             this.accumulator -= this.fixedDeltaTime;
             this.lastUpdateTime += this.fixedDeltaTime;
@@ -369,46 +358,6 @@ export class Game {
 
         // Render every frame (smooth visuals)
         this.render();
-        this.frameCount++;
-
-        // Calculate instant FPS for smoother display (every frame)
-        if (this.lastFrameTime > 0) {
-            const frameDelta = timestamp - this.lastFrameTime;
-            const instantFPS = Math.round(1000 / frameDelta);
-            // Smooth the FPS value
-            this.fps = Math.round(this.fps * 0.9 + instantFPS * 0.1);
-        }
-        this.lastFrameTime = timestamp;
-
-        // Track FPS every second for logging
-        const fpsElapsed = timestamp - this.renderFPSLastTime;
-        if (fpsElapsed >= 1000) {
-            const actualFPS = this.frameCount;
-            this.frameCount = 0;
-            this.renderFPSLastTime = timestamp;
-
-            if (actualFPS < this.minFPS) {
-                console.warn(`Render FPS dropped below minimum: ${actualFPS} < ${this.minFPS}`);
-            }
-        }
-
-        // Track update FPS
-        const updateElapsed = timestamp - this.updateFPSLastTime;
-        if (updateElapsed >= 1000) {
-            this.updateFPS = this.updateCount;
-            this.updateCount = 0;
-            this.updateFPSLastTime = timestamp;
-
-            if (this.updateFPS < this.minFPS) {
-                console.warn(`Update FPS dropped below minimum: ${this.updateFPS} < ${this.minFPS}`);
-            }
-        }
-
-        // Update FPS counter display more frequently (every 100ms for smooth updates)
-        if (this.lastFPSUpdateTime === 0 || (timestamp - this.lastFPSUpdateTime) >= 100) {
-            this.updateFPSCounter();
-            this.lastFPSUpdateTime = timestamp;
-        }
 
         // Continue loop
         requestAnimationFrame(this.gameLoop.bind(this));
@@ -446,23 +395,5 @@ export class Game {
         this.renderer.renderPowerups(this.powerups);
     }
 
-    updateFPSCounter() {
-        const fpsCounterEl = document.getElementById('fps-counter');
-        if (!fpsCounterEl) return;
 
-        // Calculate current FPS from frame count (smoother display)
-        const currentRenderFPS = Math.round(this.fps || 60);
-        const currentUpdateFPS = Math.round(this.updateFPS || 60);
-
-        // Update text
-        fpsCounterEl.textContent = `FPS: ${currentRenderFPS} / ${currentUpdateFPS}`;
-
-        // Update color based on FPS
-        fpsCounterEl.classList.remove('low-fps', 'critical-fps');
-        if (currentRenderFPS < 30) {
-            fpsCounterEl.classList.add('critical-fps');
-        } else if (currentRenderFPS < 55) {
-            fpsCounterEl.classList.add('low-fps');
-        }
-    }
 }
