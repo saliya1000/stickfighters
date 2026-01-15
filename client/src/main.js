@@ -35,6 +35,7 @@ joinBtn.addEventListener('click', () => {
 const startGameBtn = document.getElementById('start-game-btn');
 const lobbyStatus = document.getElementById('lobby-status');
 const playerList = document.getElementById('player-list');
+import { CONSTANTS } from '../../shared/constants.js';
 
 // Bind Game callbacks to UI
 game.onJoinSuccess = () => {
@@ -48,15 +49,38 @@ game.onLobbyUpdate = (data) => {
     playerList.innerHTML = '';
     data.players.forEach(p => {
         const item = document.createElement('div');
-        item.innerText = `${p.name} ${data.hostId === p.id ? '(Host)' : ''}`;
-        item.style.color = p.color;
+        item.className = 'player-card';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'player-avatar';
+        avatar.style.backgroundColor = p.color;
+        item.appendChild(avatar);
+
+        const name = document.createElement('div');
+        name.className = 'player-name';
+        name.innerText = p.name;
+        item.appendChild(name);
+
+        if (data.hostId === p.id) {
+            const badge = document.createElement('div');
+            badge.className = 'host-badge';
+            badge.innerText = 'HOST';
+            item.appendChild(badge);
+        }
+
         playerList.appendChild(item);
     });
 
     // Handle Start Button
     const amHost = game.network.socket.id === data.hostId;
+    const durationSelect = document.getElementById('game-duration');
+    const controlsLabel = document.querySelector('.lobby-label');
+
     if (amHost) {
         startGameBtn.classList.remove('hidden');
+        if (durationSelect) durationSelect.style.display = 'inline-block';
+        if (controlsLabel) controlsLabel.style.display = 'inline-block';
+
         if (data.canStart) {
             startGameBtn.disabled = false;
             startGameBtn.style.opacity = 1;
@@ -68,6 +92,8 @@ game.onLobbyUpdate = (data) => {
         }
     } else {
         startGameBtn.classList.add('hidden');
+        if (durationSelect) durationSelect.style.display = 'none';
+        if (controlsLabel) controlsLabel.style.display = 'none';
         lobbyStatus.innerText = "Waiting for host to start...";
     }
 };
@@ -85,7 +111,8 @@ game.onJoinError = (msg) => {
 };
 
 startGameBtn.addEventListener('click', () => {
-    game.network.requestStartGame();
+    const duration = parseInt(document.getElementById('game-duration').value);
+    game.network.requestStartGame(duration);
 });
 
 document.getElementById('lobby-return-btn').addEventListener('click', () => {

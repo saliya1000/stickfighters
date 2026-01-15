@@ -49,8 +49,8 @@ io.on('connection', (socket) => {
         gameRoom.togglePause(socket.id);
     });
 
-    socket.on('requestStartGame', () => {
-        gameRoom.requestStartGame(socket.id);
+    socket.on('requestStartGame', (duration) => {
+        gameRoom.requestStartGame(socket.id, duration);
     });
 
 
@@ -64,7 +64,7 @@ httpServer.listen(PORT, HOST, () => {
     // Get network interfaces to display accessible URLs
     const networkInterfaces = os.networkInterfaces();
     const addresses = [];
-    
+
     // Collect all IPv4 addresses
     Object.keys(networkInterfaces).forEach((interfaceName) => {
         networkInterfaces[interfaceName].forEach((iface) => {
@@ -73,7 +73,7 @@ httpServer.listen(PORT, HOST, () => {
             }
         });
     });
-    
+
     console.log(`\n🚀 Server running!`);
     console.log(`   Local:    http://localhost:${PORT}`);
     if (addresses.length > 0) {

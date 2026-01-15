@@ -16,6 +16,13 @@ export const CONSTANTS = {
     PLAYER_HP: 100,
     SPAWN_DELAY: 2000,
 
+    // Game Duration (seconds)
+    GAME_DURATIONS: {
+        MIN_3: 180,
+        MIN_5: 300,
+        MIN_10: 600
+    },
+
     // Combat
     PUNCH_DAMAGE: 10,
     PUNCH_COOLDOWN: 250,
@@ -32,8 +39,25 @@ export const CONSTANTS = {
         SPEED_BOOST: 'speed_boost',
         DAMAGE_BOOST: 'damage_boost'
     },
-    POWERUP_DURATION: 10000, // 10 seconds
+    POWERUP_DURATION: 10000, // 10s
+
+    // Platforms (x, y, width, height)
+    // y is from top (0)
+    PLATFORMS: [
+        { x: 300, y: 400, width: 200, height: 20 },
+        { x: 700, y: 400, width: 200, height: 20 },
+        { x: 500, y: 250, width: 200, height: 20 }
+    ],
+
     POWERUP_SPAWN_INTERVAL_MIN: 15000,
     POWERUP_SPAWN_INTERVAL_MAX: 30000,
     POWERUP_SIZE: 30,
+
+    // Hats
+    HATS: {
+        NONE: 0,
+        COWBOY: 1,
+        TOP_HAT: 2,
+        VIKING: 3
+    }
 };

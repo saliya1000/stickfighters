@@ -80,7 +80,9 @@ export class GameRoom {
             lastUpdate: Date.now(),
             action: null,
             actionTimer: 0,
-            inputs: { left: false, right: false, jump: false, attack1: false, attack2: false },
+            isCrouching: false,
+            inputs: { left: false, right: false, jump: false, crouch: false, attack1: false, attack2: false },
+            hatId: CONSTANTS.HATS.NONE, // Default hat
             buffs: {
                 speed: 0,
                 damage: 0
@@ -97,6 +99,14 @@ export class GameRoom {
 
         this.players.set(socket.id, player);
         socket.join(this.roomId);
+
+        socket.on('input', (state) => {
+            this.handleInput(socket.id, state);
+        });
+
+        socket.on('requestStartGame', () => {
+            this.requestStartGame(socket.id);
+        });
 
         // Assign host if none exists
         if (!this.hostId) {
@@ -155,7 +165,7 @@ export class GameRoom {
         });
     }
 
-    requestStartGame(socketId) {
+    requestStartGame(socketId, duration) {
         if (this.isRunning) return;
 
         // Only host can start
@@ -163,7 +173,7 @@ export class GameRoom {
 
         // Player count check
         if (this.players.size >= 2 && this.players.size <= 4) {
-            this.startGame();
+            this.startGame(duration);
         }
     }
 
@@ -194,12 +204,20 @@ export class GameRoom {
         this.io.to(this.roomId).emit('serverMessage', msg);
     }
 
-    startGame() {
+    startGame(duration = CONSTANTS.GAME_DURATIONS.MIN_3) {
+        // Validate duration
+        const validDurations = Object.values(CONSTANTS.GAME_DURATIONS);
+        if (!validDurations.includes(duration)) {
+            console.warn('Invalid duration requested, defaulting to 3 mins');
+            duration = CONSTANTS.GAME_DURATIONS.MIN_3;
+        }
+
         this.isRunning = true;
         this.isPaused = false;
         this.lastTime = Date.now();
         this.lastTimerUpdate = Date.now();
-        this.timer = 180; // Reset timer
+        this.timer = duration; // Set timer to selected duration
+
         this.powerups.clear();
         this.nextPowerupSpawn = Date.now() + 5000; // First spawn in 5s
 
@@ -303,15 +321,25 @@ export class GameRoom {
 
             // Apply Inputs (Buffed Speed)
             const speedMult = player.buffs.speed > 0 ? 1.5 : 1.0;
+
+            // Crouch Logic
+            player.isCrouching = player.inputs.crouch && player.isGrounded;
+
+
+
+            // Movement (Crouch slows you down significantly)
+            const moveSpeed = player.isCrouching ? CONSTANTS.MOVE_ACCEL * 0.3 : CONSTANTS.MOVE_ACCEL;
+
             if (player.inputs.left) {
-                player.vx -= CONSTANTS.MOVE_ACCEL * speedMult;
+                player.vx -= moveSpeed * speedMult;
                 player.facing = 'left';
             }
             if (player.inputs.right) {
-                player.vx += CONSTANTS.MOVE_ACCEL * speedMult;
+                player.vx += moveSpeed * speedMult;
                 player.facing = 'right';
             }
-            if (player.inputs.jump && player.isGrounded) {
+            // Cannot jump while crouching
+            if (player.inputs.jump && player.isGrounded && !player.isCrouching) {
                 player.vy = CONSTANTS.JUMP_FORCE;
                 player.isGrounded = false;
             }
@@ -346,6 +374,7 @@ export class GameRoom {
 
             Physics.moveEntity(player);
             Physics.constrainToArena(player);
+            Physics.checkPlatformCollisions(player);
 
             // Action Timer
             if (player.actionTimer > 0) {
@@ -422,6 +451,11 @@ export class GameRoom {
             };
 
             if (Physics.checkCollision(attackRect, targetRect)) {
+                // Ducking mechanic: Crouching players dodge HIGH attacks (Punches)
+                if (isPunch && target.isCrouching) {
+                    // Miss
+                    continue;
+                }
                 this.applyDamage(target, attacker, damage, isPunch ? 'punch' : 'kick');
             }
         }

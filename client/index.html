@@ -21,8 +21,17 @@
     <div id="lobby-screen" class="hidden">
       <h2>Lobby</h2>
       <p id="lobby-status">Waiting for host to start...</p>
+
       <div id="player-list"></div>
-      <button id="start-game-btn" class="hidden">Start Game</button>
+      <div id="game-controls">
+        <label for="game-duration" class="lobby-label">Duration:</label>
+        <select id="game-duration">
+          <option value="180" selected>3 Minutes</option>
+          <option value="300">5 Minutes</option>
+          <option value="600">10 Minutes</option>
+        </select>
+        <button id="start-game-btn" class="hidden">Start Game</button>
+      </div>
     </div>
 
     <div id="game-screen" class="hidden">

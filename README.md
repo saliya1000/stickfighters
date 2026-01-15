@@ -138,6 +138,7 @@ The server console output will list available network addresses when you run `np
 | **Move Left** | `A` or `Left Arrow` |
 | **Move Right** | `D` or `Right Arrow` |
 | **Jump** | `W`, `Space`, or `Up Arrow` |
+| **Crouch** | `S` or `Down Arrow` |
 | **Punch** | `J` |
 | **Kick** | `K` |
 | **Pause/Menu** | `ESC` |
