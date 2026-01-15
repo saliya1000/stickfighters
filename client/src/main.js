@@ -48,8 +48,25 @@ game.onLobbyUpdate = (data) => {
     playerList.innerHTML = '';
     data.players.forEach(p => {
         const item = document.createElement('div');
-        item.innerText = `${p.name} ${data.hostId === p.id ? '(Host)' : ''}`;
-        item.style.color = p.color;
+        item.className = 'player-card';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'player-avatar';
+        avatar.style.backgroundColor = p.color;
+        item.appendChild(avatar);
+
+        const name = document.createElement('div');
+        name.className = 'player-name';
+        name.innerText = p.name;
+        item.appendChild(name);
+
+        if (data.hostId === p.id) {
+            const badge = document.createElement('div');
+            badge.className = 'host-badge';
+            badge.innerText = 'HOST';
+            item.appendChild(badge);
+        }
+
         playerList.appendChild(item);
     });
 

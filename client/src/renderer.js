@@ -94,7 +94,8 @@ export class Renderer {
         el.style.left = '0';
         el.style.willChange = 'transform';
         // Optimization: contain layout/paint to reduce reflow impact
-        el.style.contain = 'layout style paint';
+        // Removed 'paint' to allow name tag and HP bar to be visible outside element bounds
+        el.style.contain = 'layout style';
 
         // Stickman Container
         const stickman = document.createElement('div');
@@ -212,15 +213,7 @@ export class Renderer {
             lastState.hp = player.hp;
         }
 
-        // Orientation
-        if (player.facing !== lastState.facing) {
-            if (player.facing === 'left') {
-                stickman.style.transform = 'scaleX(-1)';
-            } else {
-                stickman.style.transform = 'scaleX(1)';
-            }
-            lastState.facing = player.facing;
-        }
+
 
         // Action classes
         if (player.action !== lastState.action) {
@@ -233,10 +226,22 @@ export class Renderer {
             lastState.action = player.action;
         }
 
+        // Crouching (Squash animation)
+        const isCrouching = player.isCrouching || false;
+        if (isCrouching !== lastState.isCrouching || player.facing !== lastState.facing) {
+            const scaleX = player.facing === 'left' ? -1 : 1;
+            const scaleY = isCrouching ? 0.6 : 1.0;
+
+            stickman.style.transformOrigin = 'bottom center';
+            stickman.style.transform = `scale(${scaleX}, ${scaleY})`;
+
+            lastState.isCrouching = isCrouching;
+            lastState.facing = player.facing;
+        }
+
         // Visual Buffs - Filter is expensive, only update if buffs changed
         const speedBuff = player.buffs?.speed || 0;
         const damageBuff = player.buffs?.damage || 0;
-        // Simple hash or comparison for buffs
         const buffsChanged = !lastState.buffs ||
             lastState.buffs.speed !== speedBuff ||
             lastState.buffs.damage !== damageBuff;

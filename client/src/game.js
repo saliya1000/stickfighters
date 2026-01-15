@@ -172,13 +172,13 @@ export class Game {
             const scoreSignature = sortedPlayers.map(p => `${p.id}:${p.score}:${p.name}`).join('|');
 
             if (this.lastScoreStr !== scoreSignature) {
-                scoreboardEl.innerHTML = '';
+                this.scoreboardEl.innerHTML = '';
                 sortedPlayers.forEach(p => {
                     const item = document.createElement('div');
                     item.className = 'score-item';
                     item.style.color = p.color;
                     item.textContent = `${p.name}: ${p.score}`;
-                    scoreboardEl.appendChild(item);
+                    this.scoreboardEl.appendChild(item);
                 });
                 this.lastScoreStr = scoreSignature;
             }

@@ -80,7 +80,8 @@ export class GameRoom {
             lastUpdate: Date.now(),
             action: null,
             actionTimer: 0,
-            inputs: { left: false, right: false, jump: false, attack1: false, attack2: false },
+            isCrouching: false,
+            inputs: { left: false, right: false, jump: false, crouch: false, attack1: false, attack2: false },
             buffs: {
                 speed: 0,
                 damage: 0
@@ -303,15 +304,25 @@ export class GameRoom {
 
             // Apply Inputs (Buffed Speed)
             const speedMult = player.buffs.speed > 0 ? 1.5 : 1.0;
+
+            // Crouch Logic
+            player.isCrouching = player.inputs.crouch && player.isGrounded;
+
+
+
+            // Movement (Crouch slows you down significantly)
+            const moveSpeed = player.isCrouching ? CONSTANTS.MOVE_ACCEL * 0.3 : CONSTANTS.MOVE_ACCEL;
+
             if (player.inputs.left) {
-                player.vx -= CONSTANTS.MOVE_ACCEL * speedMult;
+                player.vx -= moveSpeed * speedMult;
                 player.facing = 'left';
             }
             if (player.inputs.right) {
-                player.vx += CONSTANTS.MOVE_ACCEL * speedMult;
+                player.vx += moveSpeed * speedMult;
                 player.facing = 'right';
             }
-            if (player.inputs.jump && player.isGrounded) {
+            // Cannot jump while crouching
+            if (player.inputs.jump && player.isGrounded && !player.isCrouching) {
                 player.vy = CONSTANTS.JUMP_FORCE;
                 player.isGrounded = false;
             }
@@ -422,6 +433,11 @@ export class GameRoom {
             };
 
             if (Physics.checkCollision(attackRect, targetRect)) {
+                // Ducking mechanic: Crouching players dodge HIGH attacks (Punches)
+                if (isPunch && target.isCrouching) {
+                    // Miss
+                    continue;
+                }
                 this.applyDamage(target, attacker, damage, isPunch ? 'punch' : 'kick');
             }
         }
