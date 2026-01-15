@@ -169,7 +169,12 @@ export class Game {
             // map players to string "id-score" and sort by score
             // Actually we render sorted by score, so we should check the sorted order signature
             const sortedPlayers = [...activePlayers].sort((a, b) => b.score - a.score);
-            const scoreSignature = sortedPlayers.map(p => `${p.id}:${p.score}:${p.name}`).join('|');
+            let scoreSignature = '';
+            // Manual loop is faster/allocates less than map().join()
+            for (let i = 0; i < sortedPlayers.length; i++) {
+                const p = sortedPlayers[i];
+                scoreSignature += p.id + p.score + p.name;
+            }
 
             if (this.lastScoreStr !== scoreSignature) {
                 this.scoreboardEl.innerHTML = '';
@@ -418,7 +423,22 @@ export class Game {
             this.audio.playJump();
         }
 
-        this.network.sendInput(inputState);
+        // Network Output Optimization: Only send input if changed
+        if (this.shouldSendInput(inputState)) {
+            // Clone to avoid reference issues
+            this.lastSentInput = { ...inputState };
+            this.network.sendInput(inputState);
+        }
+    }
+
+    shouldSendInput(current) {
+        if (!this.lastSentInput) return true;
+        return current.left !== this.lastSentInput.left ||
+            current.right !== this.lastSentInput.right ||
+            current.jump !== this.lastSentInput.jump ||
+            current.crouch !== this.lastSentInput.crouch ||
+            current.attack1 !== this.lastSentInput.attack1 ||
+            current.attack2 !== this.lastSentInput.attack2;
     }
 
     render() {
