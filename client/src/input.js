@@ -6,6 +6,11 @@ export class InputHandler {
 
     bindEvents() {
         window.addEventListener('keydown', (e) => {
+            // Ignore if typing in an input field
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
             // Prevent default scrolling for game keys
             // Added 's' and 'S' just in case, though usually only Arrow keys scroll
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 's', 'S'].includes(e.key)) {
