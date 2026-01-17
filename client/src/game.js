@@ -101,8 +101,12 @@ export class Game {
         requestAnimationFrame(this.gameLoop.bind(this));
     }
 
-    join(username) {
-        this.network.joinGame(username);
+    join(username, code, action) {
+        if (action === 'create') {
+            this.network.createRoom(username, code);
+        } else {
+            this.network.joinRoom(username, code);
+        }
         // Do not start until confirmation
     }
 

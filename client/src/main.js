@@ -19,17 +19,31 @@ socket.on('connect', () => {
 const joinScreen = document.getElementById('join-screen');
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');
-const joinBtn = document.getElementById('join-btn');
+const createBtn = document.getElementById('create-room-btn');
+const joinBtn = document.getElementById('join-room-btn');
 const usernameInput = document.getElementById('username');
+const roomCodeInput = document.getElementById('room-code');
 
-joinBtn.addEventListener('click', () => {
+const handleJoin = (action) => {
     const username = usernameInput.value.trim();
-    if (username) {
-        console.log('Joining as:', username);
-        // UI swichting is now handled via callbacks
-        game.join(username);
+    const code = roomCodeInput.value.trim();
+
+    if (!username) {
+        alert("Please enter a username");
+        return;
     }
-});
+
+    if (!code || code.length !== 4 || isNaN(code)) {
+        alert("Please enter a valid 4-digit room code");
+        return;
+    }
+
+    console.log(`${action}ing room ${code} as ${username}`);
+    game.join(username, code, action);
+};
+
+createBtn.addEventListener('click', () => handleJoin('create'));
+joinBtn.addEventListener('click', () => handleJoin('join'));
 
 // Bind Game callbacks to UI
 const startGameBtn = document.getElementById('start-game-btn');

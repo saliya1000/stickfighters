@@ -29,34 +29,107 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-// Simple room management (single room for now)
-const defaultRoomId = 'default-room';
-const gameRoom = new GameRoom(defaultRoomId, io);
+// Room management
+const rooms = new Map(); // code -> GameRoom
+
+// Helper to validate room code
+const isValidCode = (code) => /^\d{4}$/.test(code);
 
 io.on('connection', (socket) => {
     console.log('Player connected:', socket.id);
 
-    socket.on('joinGame', (username) => {
-        console.log(`Player ${socket.id} joining as ${username}`);
-        gameRoom.addPlayer(socket, username);
+    // Track which room this socket is in for disconnect handling
+    let currentRoomCode = null;
+
+    socket.on('createRoom', ({ username, code }) => {
+        // Validation
+        if (!username || !username.trim()) {
+            socket.emit('joinError', 'Invalid username');
+            return;
+        }
+        if (!code || !isValidCode(code)) {
+            socket.emit('joinError', 'Room code must be 4 digits');
+            return;
+        }
+        if (rooms.has(code)) {
+            socket.emit('joinError', 'Room code already exists');
+            return;
+        }
+        if (rooms.size >= 4) {
+            socket.emit('joinError', 'Server is full (max 4 rooms)');
+            return;
+        }
+
+        console.log(`Creating room ${code} for ${username}`);
+
+        // Create new room
+        const newRoom = new GameRoom(code, io);
+        rooms.set(code, newRoom);
+
+        // Add player
+        newRoom.addPlayer(socket, username);
+        currentRoomCode = code;
+
+        socket.emit('createSuccess', code); // Optional specific event
+    });
+
+    socket.on('joinRoom', ({ username, code }) => {
+        // Validation
+        if (!username || !username.trim()) {
+            socket.emit('joinError', 'Invalid username');
+            return;
+        }
+        if (!code) {
+            socket.emit('joinError', 'Please enter a room code');
+            return;
+        }
+
+        const room = rooms.get(code);
+        if (!room) {
+            socket.emit('joinError', 'Room not found');
+            return;
+        }
+
+        console.log(`Player ${username} joining room ${code}`);
+        room.addPlayer(socket, username);
+        currentRoomCode = code;
     });
 
     socket.on('input', (inputs) => {
-        gameRoom.handleInput(socket.id, inputs);
+        const room = rooms.get(currentRoomCode);
+        if (room) {
+            room.handleInput(socket.id, inputs);
+        }
     });
 
     socket.on('togglePause', () => {
-        gameRoom.togglePause(socket.id);
+        const room = rooms.get(currentRoomCode);
+        if (room) {
+            room.togglePause(socket.id);
+        }
     });
 
     socket.on('requestStartGame', (duration) => {
-        gameRoom.requestStartGame(socket.id, duration);
+        const room = rooms.get(currentRoomCode);
+        if (room) {
+            room.requestStartGame(socket.id, duration);
+        }
     });
-
 
     socket.on('disconnect', () => {
         console.log('Player disconnected:', socket.id);
-        gameRoom.removePlayer(socket.id);
+        if (currentRoomCode) {
+            const room = rooms.get(currentRoomCode);
+            if (room) {
+                room.removePlayer(socket.id);
+                // Clean up empty rooms
+                if (room.players.size === 0) {
+                    console.log(`Room ${currentRoomCode} empty, destroying...`);
+                    room.endGame('Room closed'); // Ensure loop stops
+                    rooms.delete(currentRoomCode);
+                }
+            }
+        }
     });
 });
 

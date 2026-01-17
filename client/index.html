@@ -12,9 +12,13 @@
   <div id="app">
     <div id="join-screen">
       <h1>Stickfighters</h1>
-      <div id="join-inputs">
-        <input type="text" id="username" placeholder="Enter Username" maxlength="10">
-        <button id="join-btn">Join Game</button>
+      <div id="join-inputs" style="display: flex; flex-direction: column; gap: 15px; width: 300px;">
+        <input type="text" id="username" placeholder="Enter Nickname" maxlength="10">
+        <input type="text" id="room-code" placeholder="4-Digit Room Code" maxlength="4" style="text-align: center; letter-spacing: 5px; font-weight: bold;">
+        <div style="display: flex; gap: 10px;">
+          <button id="create-room-btn" style="flex: 1; background-color: #2196F3;">Create</button>
+          <button id="join-room-btn" style="flex: 1;">Join</button>
+        </div>
       </div>
     </div>
 

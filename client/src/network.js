@@ -75,8 +75,12 @@ export class Network {
         });
     }
 
-    joinGame(username) {
-        this.socket.emit('joinGame', username);
+    createRoom(username, code) {
+        this.socket.emit('createRoom', { username, code });
+    }
+
+    joinRoom(username, code) {
+        this.socket.emit('joinRoom', { username, code });
     }
 
     sendInput(inputState) {
