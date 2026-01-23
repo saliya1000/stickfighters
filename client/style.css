@@ -628,3 +628,19 @@ input {
   background: #333;
   color: white;
 }
+
+#dev-credit {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  font-family: monospace;
+  font-size: 0.9rem;
+  z-index: 2000;
+  transition: color 0.3s;
+}
+
+#dev-credit:hover {
+  color: rgba(255, 255, 255, 1);
+}
