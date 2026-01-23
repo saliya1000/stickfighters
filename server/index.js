@@ -4,7 +4,9 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import os from 'os';
+import 'dotenv/config'; // Load .env
 import { GameRoom } from './GameRoom.js';
+import { Analytics } from './analytics.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +21,9 @@ const io = new Server(httpServer, {
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0'; // Bind to all interfaces for public access
+
+// Initialize Analytics
+Analytics.init(process.env.POSTHOG_API_KEY);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {

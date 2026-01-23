@@ -1,6 +1,7 @@
 import { Physics } from '../shared/physics.js';
 import { CONSTANTS } from '../shared/constants.js';
 import { Bot } from './bot.js';
+import { Analytics } from './analytics.js';
 
 export class GameRoom {
     constructor(roomId, io) {
@@ -128,6 +129,11 @@ export class GameRoom {
 
         // Broadcast new lobby state
         this.broadcastLobbyState();
+
+        Analytics.track('player_joined', socket.id, {
+            roomId: this.roomId,
+            name: playerName
+        });
     }
 
     removePlayer(socketId) {
@@ -321,7 +327,17 @@ export class GameRoom {
             player.score = 0; // Optional: Reset score or keep it? Usually reset for new match
         }
 
+
         this.io.to(this.roomId).emit('gameStart', { mapId: this.mapId });
+
+        Analytics.track('game_started', this.hostId, {
+            roomId: this.roomId,
+            mapId: this.mapId,
+            duration: duration,
+            playerCount: this.players.size,
+            botCount: this.bots.size,
+            humanCount: this.players.size - this.bots.size
+        });
 
         this.intervalId = setInterval(() => {
             this.update();
@@ -361,6 +377,15 @@ export class GameRoom {
         }));
 
         console.log('Ending game. Leaderboard:', scores);
+
+        Analytics.track('game_ended', this.hostId, {
+            roomId: this.roomId,
+            reason: reason,
+            winner: winnerName,
+            isDraw: isDraw,
+            durationPlayed: (CONSTANTS.GAME_DURATIONS.MIN_3 - this.timer), // rough calc
+            scores: scores
+        });
 
         this.io.to(this.roomId).emit('gameEnd', { reason, winner: winnerMessage, scores });
     }
