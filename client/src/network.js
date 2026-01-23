@@ -48,9 +48,9 @@ export class Network {
             this.game.onStateUpdate(state);
         });
 
-        this.socket.on('gameStart', () => {
-            console.log('Game Started!');
-            if (this.game.onGameStart) this.game.onGameStart();
+        this.socket.on('gameStart', (data) => {
+            console.log('Game Started!', data);
+            if (this.game.onGameStart) this.game.onGameStart(data);
         });
 
         this.socket.on('gameEnd', (data) => {
@@ -91,7 +91,15 @@ export class Network {
         this.socket.emit('togglePause');
     }
 
-    requestStartGame(duration) {
-        this.socket.emit('requestStartGame', duration);
+    requestStartGame(duration, mapId) {
+        this.socket.emit('requestStartGame', { duration, mapId });
+    }
+
+    addBot(difficulty) {
+        this.socket.emit('addBot', difficulty);
+    }
+
+    removeBot(botId) {
+        this.socket.emit('removeBot', botId);
     }
 }

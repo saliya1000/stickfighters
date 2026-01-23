@@ -41,13 +41,25 @@ export const CONSTANTS = {
     },
     POWERUP_DURATION: 10000, // 10s
 
-    // Platforms (x, y, width, height)
-    // y is from top (0)
-    PLATFORMS: [
-        { x: 300, y: 400, width: 200, height: 20 },
-        { x: 700, y: 400, width: 200, height: 20 },
-        { x: 500, y: 250, width: 200, height: 20 }
-    ],
+    // Maps
+    MAPS: {
+        CLASSIC: [
+            { x: 300, y: 400, width: 200, height: 20 },
+            { x: 700, y: 400, width: 200, height: 20 },
+            { x: 500, y: 250, width: 200, height: 20 }
+        ],
+        ISLANDS: [
+            { x: 100, y: 450, width: 150, height: 20 },
+            { x: 400, y: 350, width: 150, height: 20 },
+            { x: 700, y: 250, width: 150, height: 20 },
+            { x: 950, y: 450, width: 150, height: 20 }
+        ],
+        TOWER: [
+            { x: 200, y: 450, width: 800, height: 20 }, // Base
+            { x: 400, y: 300, width: 400, height: 20 }, // Mid
+            { x: 500, y: 150, width: 200, height: 20 }  // Top
+        ]
+    },
 
     POWERUP_SPAWN_INTERVAL_MIN: 15000,
     POWERUP_SPAWN_INTERVAL_MAX: 30000,

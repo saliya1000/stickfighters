@@ -1,5 +1,6 @@
 import { Physics } from '../shared/physics.js';
 import { CONSTANTS } from '../shared/constants.js';
+import { Bot } from './bot.js';
 
 export class GameRoom {
     constructor(roomId, io) {
@@ -12,7 +13,9 @@ export class GameRoom {
         this.pauser = null; // Track who paused
         this.lastTime = Date.now();
         this.timer = 180; // 3 minutes in seconds
+        this.bots = new Map(); // id -> Bot instance
         this.powerups = new Map(); // id -> powerup object
+        this.mapId = 'CLASSIC';
         this.nextPowerupId = 1;
         this.nextPowerupSpawn = Date.now() + Math.random() * (CONSTANTS.POWERUP_SPAWN_INTERVAL_MAX - CONSTANTS.POWERUP_SPAWN_INTERVAL_MIN) + CONSTANTS.POWERUP_SPAWN_INTERVAL_MIN;
 
@@ -143,9 +146,19 @@ export class GameRoom {
 
         this.players.delete(socketId);
 
+        // Check if any humans are left
+        const humans = Array.from(this.players.values()).filter(p => !p.isBot);
+        if (humans.length === 0) {
+            console.log(`No humans left in room ${this.roomId}, clearing bots...`);
+            this.bots.clear();
+            this.players.clear(); // This ensures room.players.size === 0 in index.js
+            this.endGame('Host left');
+            return;
+        }
+
         // Reassign host if the host left
         if (this.hostId === socketId) {
-            this.hostId = this.players.keys().next().value || null;
+            this.hostId = humans[0]?.id || null;
         }
 
         this.io.to(this.roomId).emit('playerLeft', socketId);
@@ -165,7 +178,82 @@ export class GameRoom {
         });
     }
 
-    requestStartGame(socketId, duration) {
+    addBot(difficulty = 'normal') {
+        if (this.players.size >= 4) return;
+
+        const id = `bot_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        const name = `Bot (${difficulty})`;
+
+        // Use Bot class
+        const bot = new Bot(id, name, difficulty, this);
+        this.bots.set(id, bot);
+
+        // Add to players map so physics/rendering works naturally
+        // Assign Unique Color
+        let playerColor = '#FFFFFF';
+        for (const color of this.availableColors) {
+            if (!this.usedColors.has(color)) {
+                playerColor = color;
+                this.usedColors.add(color);
+                break;
+            }
+        }
+        // Fallback if all colors taken (random hsl)
+        if (playerColor === '#FFFFFF' && this.usedColors.has('#FFFFFF')) {
+            playerColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
+        }
+
+        const player = {
+            id: id,
+            name: name,
+            x: Math.random() * (CONSTANTS.ARENA_WIDTH - 100) + 50,
+            y: 100,
+            vx: 0,
+            vy: 0,
+            color: playerColor,
+            facing: Math.random() > 0.5 ? 'right' : 'left',
+            hp: CONSTANTS.PLAYER_HP,
+            score: 0,
+            isGrounded: false,
+            punchCooldown: 0,
+            kickCooldown: 0,
+            lastUpdate: Date.now(),
+            action: null,
+            actionTimer: 0,
+            isCrouching: false,
+            inputs: { left: false, right: false, jump: false, crouch: false, attack1: false, attack2: false },
+            hatId: CONSTANTS.HATS.NONE,
+            buffs: { speed: 0, damage: 0 },
+            isBot: true // Flag to identify bots
+        };
+
+        if (this.isRunning) {
+            player.isWaiting = false; // Bots can join mid-game? Maybe better to spawn them directly
+            this.respawnPlayer(player);
+        }
+
+        this.players.set(id, player);
+        this.io.to(this.roomId).emit('playerJoined', player);
+        this.broadcastLobbyState();
+    }
+
+    removeBot(botId) {
+        if (!this.bots.has(botId)) return;
+
+        const player = this.players.get(botId);
+        if (player) {
+            if (this.usedColors.has(player.color)) {
+                this.usedColors.delete(player.color);
+            }
+        }
+
+        this.bots.delete(botId);
+        this.players.delete(botId);
+        this.io.to(this.roomId).emit('playerLeft', botId);
+        this.broadcastLobbyState();
+    }
+
+    requestStartGame(socketId, duration, mapId) {
         if (this.isRunning) return;
 
         // Only host can start
@@ -173,7 +261,7 @@ export class GameRoom {
 
         // Player count check
         if (this.players.size >= 2 && this.players.size <= 4) {
-            this.startGame(duration);
+            this.startGame(duration, mapId);
         }
     }
 
@@ -204,13 +292,19 @@ export class GameRoom {
         this.io.to(this.roomId).emit('serverMessage', msg);
     }
 
-    startGame(duration = CONSTANTS.GAME_DURATIONS.MIN_3) {
+    startGame(duration = CONSTANTS.GAME_DURATIONS.MIN_3, mapId = 'CLASSIC') {
         // Validate duration
         const validDurations = Object.values(CONSTANTS.GAME_DURATIONS);
         if (!validDurations.includes(duration)) {
             console.warn('Invalid duration requested, defaulting to 3 mins');
             duration = CONSTANTS.GAME_DURATIONS.MIN_3;
         }
+
+        // Validate Map
+        if (!CONSTANTS.MAPS[mapId]) {
+            mapId = 'CLASSIC';
+        }
+        this.mapId = mapId;
 
         this.isRunning = true;
         this.isPaused = false;
@@ -227,7 +321,7 @@ export class GameRoom {
             player.score = 0; // Optional: Reset score or keep it? Usually reset for new match
         }
 
-        this.io.to(this.roomId).emit('gameStart');
+        this.io.to(this.roomId).emit('gameStart', { mapId: this.mapId });
 
         this.intervalId = setInterval(() => {
             this.update();
@@ -308,6 +402,18 @@ export class GameRoom {
             }
         }
 
+        // Update Bots
+        if (this.isRunning && !this.isPaused) {
+            const dt = 1 / CONSTANTS.TICK_RATE;
+            for (const bot of this.bots.values()) {
+                const inputs = bot.update(dt);
+                const player = this.players.get(bot.id);
+                if (player) {
+                    player.inputs = inputs;
+                }
+            }
+        }
+
         for (const player of this.players.values()) {
             if (player.hp <= 0 || player.isWaiting) continue;
 
@@ -374,7 +480,9 @@ export class GameRoom {
 
             Physics.moveEntity(player);
             Physics.constrainToArena(player);
-            Physics.checkPlatformCollisions(player);
+
+            const platforms = CONSTANTS.MAPS[this.mapId] || CONSTANTS.MAPS.CLASSIC;
+            Physics.checkPlatformCollisions(player, platforms);
 
             // Action Timer
             if (player.actionTimer > 0) {

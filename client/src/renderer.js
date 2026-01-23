@@ -8,20 +8,24 @@ export class Renderer {
         this.platformsRendered = false;
     }
 
-    init() {
+    init(platforms) {
         this.arena.style.width = `${CONSTANTS.ARENA_WIDTH}px`;
         this.arena.style.height = `${CONSTANTS.ARENA_HEIGHT}px`;
         this.arena.style.position = 'relative';
         this.arena.style.margin = '0 auto';
         this.arena.style.border = '2px solid #666';
 
-        this.renderPlatforms();
+        this.renderPlatforms(platforms);
     }
 
-    renderPlatforms() {
-        if (this.platformsRendered) return;
+    renderPlatforms(platforms) {
+        // Clear existing platforms
+        const existing = this.arena.querySelectorAll('.platform');
+        existing.forEach(el => el.remove());
+        this.platformsRendered = false;
 
-        const platforms = CONSTANTS.PLATFORMS || [];
+        platforms = platforms || CONSTANTS.MAPS.CLASSIC || [];
+
         platforms.forEach(p => {
             const el = document.createElement('div');
             el.className = 'platform';

@@ -85,8 +85,11 @@ export class Game {
         }
     }
 
-    start() {
-        this.renderer.init();
+    start(mapId = 'CLASSIC') {
+        this.mapId = mapId;
+        const platforms = CONSTANTS.MAPS[mapId] || CONSTANTS.MAPS.CLASSIC;
+        this.renderer.init(platforms);
+
         this.setupUI();
         this.isRunning = true;
         const now = performance.now();

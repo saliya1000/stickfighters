@@ -43,16 +43,16 @@ export class Physics {
         );
     }
 
-    static checkPlatformCollisions(entity) {
+    static checkPlatformCollisions(entity, platforms) {
         // Only check if falling
-        if (entity.vy < 0) return;
+        if (entity.vy < 0 || !platforms) return;
 
         const feetY = entity.y + CONSTANTS.PLAYER_HEIGHT;
         const prevFeetY = (entity.y - entity.vy) + CONSTANTS.PLAYER_HEIGHT; // Approximate previous position
         // Better: we assume moveEntity has already updated y. 
         // We need to know if we crossed the line this frame.
 
-        for (const plat of CONSTANTS.PLATFORMS) {
+        for (const plat of platforms) {
             // Horizontal overlap
             if (entity.x + CONSTANTS.PLAYER_WIDTH > plat.x && entity.x < plat.x + plat.width) {
                 // Vertical overlap logic for one-way platform

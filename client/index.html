@@ -14,7 +14,8 @@
       <h1>Stickfighters</h1>
       <div id="join-inputs" style="display: flex; flex-direction: column; gap: 15px; width: 300px;">
         <input type="text" id="username" placeholder="Enter Nickname" maxlength="10">
-        <input type="text" id="room-code" placeholder="4-Digit Room Code" maxlength="4" style="text-align: center; letter-spacing: 5px; font-weight: bold;">
+        <input type="text" id="room-code" placeholder="4-Digit Room Code" maxlength="4"
+          style="text-align: center; letter-spacing: 5px; font-weight: bold;">
         <div style="display: flex; gap: 10px;">
           <button id="create-room-btn" style="flex: 1; background-color: #2196F3;">Create</button>
           <button id="join-room-btn" style="flex: 1;">Join</button>
@@ -28,12 +29,28 @@
 
       <div id="player-list"></div>
       <div id="game-controls">
+        <label for="map-select" class="lobby-label">Map:</label>
+        <select id="map-select">
+          <option value="CLASSIC" selected>Classic</option>
+          <option value="ISLANDS">Islands</option>
+          <option value="TOWER">Tower</option>
+        </select>
+
         <label for="game-duration" class="lobby-label">Duration:</label>
         <select id="game-duration">
           <option value="180" selected>3 Minutes</option>
           <option value="300">5 Minutes</option>
           <option value="600">10 Minutes</option>
         </select>
+
+        <div id="bot-controls" style="display:inline-block; margin-left: 10px;">
+          <select id="bot-difficulty">
+            <option value="easy">Bot: Easy</option>
+            <option value="normal" selected>Bot: Normal</option>
+            <option value="hard">Bot: Hard</option>
+          </select>
+          <button id="add-bot-btn">Add Bot</button>
+        </div>
         <button id="start-game-btn" class="hidden">Start Game</button>
       </div>
     </div>

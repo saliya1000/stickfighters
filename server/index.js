@@ -109,10 +109,25 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('requestStartGame', (duration) => {
+    socket.on('requestStartGame', ({ duration, mapId }) => {
         const room = rooms.get(currentRoomCode);
         if (room) {
-            room.requestStartGame(socket.id, duration);
+            room.requestStartGame(socket.id, duration, mapId);
+        }
+    });
+
+    socket.on('addBot', (difficulty) => {
+        const room = rooms.get(currentRoomCode);
+        // Only host can add bots? Or anyone? Let's say host for now.
+        if (room && room.hostId === socket.id) {
+            room.addBot(difficulty);
+        }
+    });
+
+    socket.on('removeBot', (botId) => {
+        const room = rooms.get(currentRoomCode);
+        if (room && room.hostId === socket.id) {
+            room.removeBot(botId);
         }
     });
 
