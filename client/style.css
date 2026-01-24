@@ -773,6 +773,16 @@ input {
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
 
+  /* Lobby Screen Scroll Fix */
+  #lobby-screen {
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-top: 40px;
+    padding-bottom: 80px;
+    /* Extra space for scrolling past buttons */
+    -webkit-overflow-scrolling: touch;
+  }
+
   /* Lobby Screen */
   #game-controls {
     flex-direction: column;
