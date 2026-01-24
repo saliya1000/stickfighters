@@ -92,6 +92,42 @@
 
     <div id="version-footer">v<span id="game-version">1.0.0</span></div>
     <a id="dev-credit" href="https://saliyadev.com" target="_blank">Dev: saliyadev.com</a>
+
+    <!-- Help Button & Modal -->
+    <button id="help-btn" class="icon-btn" title="How to Play">?</button>
+
+    <div id="help-modal" class="hidden">
+      <div class="modal-content">
+        <h2>Controls</h2>
+        <div class="control-group">
+          <div class="control-row">
+            <span class="key-group">
+              <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+            </span>
+            <span class="action">Move</span>
+          </div>
+          <div class="control-row">
+            <span class="key-group">
+              <span class="key">SPACE</span>
+            </span>
+            <span class="action">Jump</span>
+          </div>
+          <div class="control-row">
+            <span class="key-group">
+              <span class="key">J</span>
+            </span>
+            <span class="action">Punch</span>
+          </div>
+          <div class="control-row">
+            <span class="key-group">
+              <span class="key">K</span>
+            </span>
+            <span class="action">Kick</span>
+          </div>
+        </div>
+        <button id="close-help-btn">Got it!</button>
+      </div>
+    </div>
   </div>
   <script type="module" src="/src/main.js"></script>
 </body>

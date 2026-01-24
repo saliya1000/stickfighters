@@ -169,3 +169,23 @@ document.getElementById('lobby-return-btn').addEventListener('click', () => {
 document.getElementById('waiting-leave-btn').addEventListener('click', () => {
     window.location.reload();
 });
+
+// Help Modal Logic
+const helpBtn = document.getElementById('help-btn');
+const helpModal = document.getElementById('help-modal');
+const closeHelpBtn = document.getElementById('close-help-btn');
+
+helpBtn.addEventListener('click', () => {
+    helpModal.classList.remove('hidden');
+});
+
+closeHelpBtn.addEventListener('click', () => {
+    helpModal.classList.add('hidden');
+});
+
+// Allow closing with Escape key
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !helpModal.classList.contains('hidden')) {
+        helpModal.classList.add('hidden');
+    }
+});
