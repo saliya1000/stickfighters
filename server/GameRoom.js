@@ -188,7 +188,18 @@ export class GameRoom {
         if (this.players.size >= 4) return;
 
         const id = `bot_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-        const name = `Bot (${difficulty})`;
+
+        // Pick a random name
+        const usedNames = new Set(Array.from(this.players.values()).map(p => p.name));
+        let availableNames = CONSTANTS.BOT_NAMES.filter(n => !usedNames.has(n));
+
+        if (availableNames.length === 0) {
+            // Fallback if all taken
+            availableNames = [`Bot ${Math.floor(Math.random() * 1000)}`];
+        }
+
+        const randomName = availableNames[Math.floor(Math.random() * availableNames.length)];
+        const name = `${randomName}`; // Simply use the name
 
         // Use Bot class
         const bot = new Bot(id, name, difficulty, this);

@@ -71,5 +71,16 @@ export const CONSTANTS = {
         COWBOY: 1,
         TOP_HAT: 2,
         VIKING: 3
-    }
+    },
+
+    // Bot Names
+    BOT_NAMES: [
+        "Rusty", "Viper", "Shadow", "Hunter", "Blaze",
+        "Spike", "Razor", "Ghost", "Titan", "Wolf",
+        "Hawk", "Eagle", "Bear", "Shark", "Cobra",
+        "Diesel", "Tank", "Rogue", "Ninja", "Samurai",
+        "Viking", "Knight", "Spartan", "Gladiator", "Ranger",
+        "Alex", "Sam", "Jordan", "Casey", "Riley",
+        "Morgan", "Taylor", "Jamie", "Quinn", "Skyler"
+    ]
 };
