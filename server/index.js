@@ -19,7 +19,7 @@ const io = new Server(httpServer, {
     }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 const HOST = process.env.HOST || '0.0.0.0'; // Bind to all interfaces for public access
 
 // Initialize Analytics

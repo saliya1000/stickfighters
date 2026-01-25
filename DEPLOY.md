@@ -134,3 +134,32 @@ By default, the game runs on port `3000`.
 -   **Stop:** `pm2 stop stick-rumble`
 -   **Delete:** `pm2 delete stick-rumble`
 -   **Monitor:** `pm2 monit`
+
+## Option 2: Deploy with Docker
+
+If you prefer using Docker, the project includes a `Dockerfile` and `docker-compose.yml`.
+
+### Prerequisites
+-   **Docker** and **Docker Compose** installed on your VPS.
+
+### 1. Configure Environment
+Create the `.env` file as described in the standard deployment steps:
+```bash
+cp .env.example .env
+nano .env
+```
+
+### 2. Start with Docker Compose
+Run the following command to build and start the container:
+
+```bash
+docker compose up -d --build
+```
+
+The game will be available at `http://<YOUR_VPS_IP>:3002`.
+
+### Common Docker Commands
+-   **View Logs:** `docker compose logs -f`
+-   **Stop:** `docker compose down`
+-   **Restart:** `docker compose restart`
+
