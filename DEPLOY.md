@@ -5,7 +5,20 @@ This guide addresses how to deploy the **Stick Rumble** web game to a private Li
 ## Prerequisites
 
 Ensure your VPS has the following installed:
--   **Node.js** (v18 or higher recommended)
+-   **Node.js** (v18 or higher is **REQUIRED**).
+    -   *Error `SyntaxError: Unexpected token '.'` means your Node version is too old.*
+    -   Check version: `node -v`
+    -   **How to Upgrade:**
+        ```bash
+        # Install NVM (Node Version Manager)
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+        source ~/.bashrc
+        
+        # Install Node 18
+        nvm install 18
+        nvm use 18
+        nvm alias default 18
+        ```
 -   **npm** (usually comes with Node.js)
 -   **Git**
 
