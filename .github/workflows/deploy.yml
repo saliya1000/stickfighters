@@ -27,7 +27,7 @@ jobs:
             git pull origin master
             
             # Rebuild and restart Docker containers
-            sudo docker compose up -d --build
+            docker compose up -d --build
             
             # Clean up unused images to save space
-            sudo docker image prune -f
+            docker image prune -f
