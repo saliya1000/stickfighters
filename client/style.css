@@ -1024,3 +1024,25 @@ input {
     display: none !important;
   }
 }
+
+/* Mobile Layout Fixes regarding Footer Overlap */
+@media (max-width: 1024px) {
+  #dev-credit {
+    left: 50%;
+    transform: translateX(-110%);
+    bottom: 5px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    text-shadow: 0 0 2px black;
+  }
+
+  #version-footer {
+    right: auto;
+    left: 50%;
+    transform: translateX(10%);
+    bottom: 5px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    text-shadow: 0 0 2px black;
+  }
+}
