@@ -778,9 +778,12 @@ input {
     justify-content: flex-start;
     overflow-y: auto;
     padding-top: 40px;
-    padding-bottom: 80px;
+    padding-bottom: 150px;
+    /* Increased to avoid footer overlap */
     /* Extra space for scrolling past buttons */
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    /* Allow vertical scroll */
   }
 
   /* Lobby Screen */
@@ -898,6 +901,7 @@ input {
     font-size: 1rem;
   }
 }
+
 /* Mobile Touch Controls */
 #touch-controls {
   position: absolute;
@@ -905,12 +909,14 @@ input {
   left: 0;
   width: 100%;
   height: 200px;
-  display: none; /* Hidden by default (desktop) */
+  display: none;
+  /* Hidden by default (desktop) */
   justify-content: space-between;
   align-items: flex-end;
   padding: 0 40px;
   box-sizing: border-box;
-  pointer-events: none; /* Let clicks pass through empty areas */
+  pointer-events: none;
+  /* Let clicks pass through empty areas */
   z-index: 2000;
 }
 
@@ -925,7 +931,8 @@ input {
   display: flex;
   justify-content: center;
   align-items: center;
-  pointer-events: auto; /* Re-enable clicks on buttons */
+  pointer-events: auto;
+  /* Re-enable clicks on buttons */
   user-select: none;
   touch-action: manipulation;
   backdrop-filter: blur(4px);
@@ -933,7 +940,8 @@ input {
   outline: none;
 }
 
-.touch-btn:active, .touch-btn.active {
+.touch-btn:active,
+.touch-btn.active {
   background: rgba(255, 255, 255, 0.5);
   transform: scale(0.95);
 }
@@ -976,11 +984,11 @@ input {
 /* Ensure controls appear on mobile/tablet */
 @media (max-width: 1024px) {
   #touch-controls.hidden {
-      display: none !important;
+    display: none !important;
   }
-  
+
   #touch-controls {
-      display: flex;
+    display: flex;
   }
 }
 
@@ -1009,18 +1017,28 @@ input {
 }
 
 @keyframes rotate {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-90deg); }
-  100% { transform: rotate(-90deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-90deg);
+  }
+
+  100% {
+    transform: rotate(-90deg);
+  }
 }
 
 @media screen and (max-width: 1024px) and (orientation: portrait) {
   #orientation-lock {
     display: flex;
   }
-  
+
   /* Hide the game when locked to prevent confusion */
-  #game-arena, #hud, #touch-controls {
+  #game-arena,
+  #hud,
+  #touch-controls {
     display: none !important;
   }
 }
@@ -1045,4 +1063,12 @@ input {
     white-space: nowrap;
     text-shadow: 0 0 2px black;
   }
+}
+/* Prevent default touch actions (zooming) globally, re-enable scrolling where needed */
+body {
+    touch-action: none;
+}
+
+#lobby-screen {
+    touch-action: pan-y;
 }
