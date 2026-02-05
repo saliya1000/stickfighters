@@ -9,13 +9,43 @@ export class Renderer {
     }
 
     init(platforms) {
-        this.arena.style.width = `${CONSTANTS.ARENA_WIDTH}px`;
-        this.arena.style.height = `${CONSTANTS.ARENA_HEIGHT}px`;
-        this.arena.style.position = 'relative';
-        this.arena.style.margin = '0 auto';
+        // Initial setup - styles will be handled by resize()
+        this.arena.style.position = 'absolute';
+        this.arena.style.transformOrigin = 'center center';
+        this.arena.style.overflow = 'hidden';
         this.arena.style.border = '2px solid #666';
 
+        // Setup resizing
+        window.addEventListener('resize', () => this.resize());
+        this.resize(); // Initial sizing
+
         this.renderPlatforms(platforms);
+    }
+
+    resize() {
+        // Target Aspect Ratio
+        const targetRatio = CONSTANTS.ARENA_WIDTH / CONSTANTS.ARENA_HEIGHT;
+        const windowRatio = window.innerWidth / window.innerHeight;
+
+        let scale;
+        if (windowRatio > targetRatio) {
+            // Window is wider - fit to height
+            scale = window.innerHeight / CONSTANTS.ARENA_HEIGHT;
+        } else {
+            // Window is taller - fit to width
+            scale = window.innerWidth / CONSTANTS.ARENA_WIDTH;
+        }
+
+        // Limit max scale to avoiding pixelation on huge screens?
+        // Let's allow full scale for now so it feels immersive
+        // scale = Math.min(scale, 1.5); 
+
+        // Apply
+        this.arena.style.width = `${CONSTANTS.ARENA_WIDTH}px`;
+        this.arena.style.height = `${CONSTANTS.ARENA_HEIGHT}px`;
+        this.arena.style.left = '50%';
+        this.arena.style.top = '50%';
+        this.arena.style.transform = `translate(-50%, -50%) scale(${scale})`;
     }
 
     renderPlatforms(platforms) {

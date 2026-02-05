@@ -983,3 +983,44 @@ input {
       display: flex;
   }
 }
+
+/* Orientation Lock */
+#orientation-lock {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0b0c15;
+  color: white;
+  z-index: 9999;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.rotate-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: rotate 2s infinite linear;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-90deg); }
+  100% { transform: rotate(-90deg); }
+}
+
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+  #orientation-lock {
+    display: flex;
+  }
+  
+  /* Hide the game when locked to prevent confusion */
+  #game-arena, #hud, #touch-controls {
+    display: none !important;
+  }
+}
