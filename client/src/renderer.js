@@ -38,7 +38,7 @@ export class Renderer {
 
         // Limit max scale to avoiding pixelation on huge screens?
         // Let's allow full scale for now so it feels immersive
-        // scale = Math.min(scale, 1.5); 
+        scale = Math.min(scale, 1);
 
         // Apply
         this.arena.style.width = `${CONSTANTS.ARENA_WIDTH}px`;
