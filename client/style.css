@@ -9,6 +9,8 @@ body {
   background-color: #222;
   color: white;
   user-select: none;
+  -webkit-touch-callout: none;
+  /* Prevent long-press menu on iOS */
 }
 
 /* Common UI */
@@ -975,7 +977,9 @@ input {
 }
 
 /* Ensure controls appear on mobile/tablet */
-@media (max-width: 1024px) {
+/* Ensure controls appear on ANY touch device (mobile, tablet, touch laptop) */
+@media (pointer: coarse),
+(max-width: 1024px) {
   #touch-controls.hidden {
     display: none !important;
   }
@@ -983,6 +987,37 @@ input {
   #touch-controls {
     display: flex;
   }
+}
+
+/* Hover safety - Prevent sticky hover on touch devices */
+@media (hover: hover) {
+  button:hover {
+    background-color: #45a049;
+  }
+
+  .icon-btn:hover {
+    background: white;
+    color: black;
+    transform: scale(1.1);
+  }
+
+  .touch-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* iOS Input Zoom Fix & Better Touch Targets */
+input,
+select {
+  font-size: 16px !important;
+  /* Prevents iOS zoom */
+  min-height: 48px;
+  /* Touch target size */
+}
+
+button {
+  min-height: 48px;
+  /* Touch target size */
 }
 
 /* Orientation Lock */

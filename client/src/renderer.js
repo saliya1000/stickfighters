@@ -6,6 +6,8 @@ export class Renderer {
         this.playerElements = new Map();
         this.powerupElements = new Map();
         this.platformsRendered = false;
+        // Simple mobile detection for performance optimization
+        this.isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     }
 
     init(platforms) {
@@ -311,12 +313,19 @@ export class Renderer {
             lastState.buffs.damage !== damageBuff;
 
         if (buffsChanged) {
-            if (speedBuff > 0) {
-                stickman.style.filter = 'drop-shadow(0 0 10px yellow)';
-            } else if (damageBuff > 0) {
-                stickman.style.filter = 'drop-shadow(0 0 10px red)';
-            } else {
+            if (this.isMobile) {
+                // Optimization: Mobile devices skip expensive drop-shadow filters
+                // Could use a simple border or color change instead if critical, 
+                // but for now just skipping the glow effect is a huge perf win.
                 stickman.style.filter = 'none';
+            } else {
+                if (speedBuff > 0) {
+                    stickman.style.filter = 'drop-shadow(0 0 10px yellow)';
+                } else if (damageBuff > 0) {
+                    stickman.style.filter = 'drop-shadow(0 0 10px red)';
+                } else {
+                    stickman.style.filter = 'none';
+                }
             }
             lastState.buffs = { speed: speedBuff, damage: damageBuff };
         }
