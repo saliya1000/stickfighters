@@ -1072,3 +1072,12 @@ body {
 #lobby-screen {
     touch-action: pan-y;
 }
+
+/* PWA Install Tip in Lock Screen */
+.install-tip {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+    color: #888;
+    line-height: 1.5;
+}
