@@ -848,13 +848,6 @@ input {
     overflow: hidden;
   }
 
-  #game-arena {
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    transform-origin: top center;
-  }
-
   /* Help Modal */
   .modal-content {
     width: 85%;
@@ -1064,20 +1057,46 @@ input {
     text-shadow: 0 0 2px black;
   }
 }
+
 /* Prevent default touch actions (zooming) globally, re-enable scrolling where needed */
 body {
-    touch-action: none;
+  touch-action: none;
 }
 
 #lobby-screen {
-    touch-action: pan-y;
+  touch-action: pan-y;
 }
 
 /* PWA Install Tip in Lock Screen */
 .install-tip {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #333;
-    color: #888;
-    line-height: 1.5;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* Mobile Lobby Layout Fix: Move footer to top when game is not active */
+@media (max-width: 1024px) {
+
+  /* When game-screen is hidden (Lobby/Join/End), move footers to Top Left */
+  #game-screen.hidden~#dev-credit {
+    top: 10px !important;
+    bottom: auto !important;
+    left: 10px !important;
+    transform: none !important;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #game-screen.hidden~#version-footer {
+    top: 30px !important;
+    /* Below dev credit */
+    bottom: auto !important;
+    left: 10px !important;
+    right: auto !important;
+    transform: none !important;
+    text-align: left;
+    white-space: nowrap;
+  }
 }
